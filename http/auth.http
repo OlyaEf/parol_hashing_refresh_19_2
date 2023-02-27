@@ -18,3 +18,7 @@ Content-Type: application/json
 ###
 PUT http://localhost:5000/auth/
 Content-Type: application/json
+
+{
+  "refresh_token": "JWT_REFRESH_TOKEN"
+}

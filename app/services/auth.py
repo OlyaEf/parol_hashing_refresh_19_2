@@ -1,11 +1,12 @@
-from calendar import calendar
-from datetime import datetime
+import calendar
+import datetime
+
+from flask import abort
 
 import jwt
 
 from app.helpers.constants import JWT_SECRET, JWT_ALGORITHM
 from app.services.user import UserService
-from flask import abort
 
 
 class AuthService:
@@ -23,10 +24,10 @@ class AuthService:
         # если пользователь найден, вызываем юзер_сервер метод compare_password
         # передаем пароль(хэш) у найденного пользователя, и передаем сам пароль (чистый
 
-        # проверяем соответ.паролей, если это создание токена, а не перегенерация на основании рефреш_токена.
+        # проверяем соответствие паролей, если это создание токена, а не перегенерация на основании рефреш_токена.
         if not is_refresh:  # если is_refresh=False проверяем соответствие паролей, если True - не проверяем.
             if not self.user_service.compare_password(user.password, password):
-                abort(400)
+                raise abort(400)
 
         # если пароль хэш и пароль чистый ровны, то формируем набор данных:
         data = {
@@ -40,8 +41,8 @@ class AuthService:
         access_token = jwt.encode(data, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
         # 130 дней для обновления токена
-        min30 = datetime.datetime.utcnow() + datetime.timedelta(minutes=130)
-        data['exp'] = calendar.timegm(min30.timetuple())
+        days130 = datetime.datetime.utcnow() + datetime.timedelta(days=130)
+        data['exp'] = calendar.timegm(days130.timetuple())
         refresh_token = jwt.encode(data, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
         # Мы отдаем как access_token, так и refresh_token.
@@ -59,6 +60,11 @@ class AuthService:
         # И, так как нам прислали рефрешь токент то мы доверяем это клиенту и не требуем пароля.
         username = data.get("username")
 
+        user = self.user_service.get_by_username(username=username)
+
         # мы вызываем еще раз фугнкцию generate_tokens указывая только
         # юзернейм, а вместо пароля - Нон, и добавим is_refresh со значением True
-        return self.generate_tokens(username, None, is_refresh=True)
+        if user is None:
+            raise Exception()
+
+        return self.generate_tokens(username, user.password, is_refresh=True)

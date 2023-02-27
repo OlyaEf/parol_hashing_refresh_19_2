@@ -1,7 +1,9 @@
 import jwt
 
-from app.helpers.constants import JWT_SECRET, JWT_ALGORITHM
+
 from flask import request, abort
+
+from app.helpers.constants import JWT_SECRET, JWT_ALGORITHM
 
 
 def auth_required(func):

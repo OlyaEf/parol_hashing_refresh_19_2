@@ -3,7 +3,6 @@ from flask_restx import Namespace, Resource
 
 from app.container import auth_services
 
-
 auth_ns = Namespace('auth')
 
 
@@ -26,7 +25,7 @@ class AuthsView(Resource):
         if None is [username, password]:
             return '', 400
 
-        # если все ок - вызываем аут_сервис и метод генерацтт токена.
+        # если все ок - вызываем аут_сервис и метод генерация токена.
         tokens = auth_services.generate_tokens(username, password)
 
         return tokens, 201
